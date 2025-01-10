@@ -1,38 +1,30 @@
-import express from "express";
-const app=express()
-app.use(express.json())
-
+import express from 'express';
+import db_connect from './config/database.js';
 import 'dotenv/config'
-import cookieParser from 'cookie-parser'
-// app.use(cookieParser)
+// import upload from './config/multer.js';
+// import path from 'path'
 
-const port=process.env.PORT||4000
-console.log(process.env.PORT)
+// const __dirname=path.dirname(import.meta.url)
+// console.log(__dirname)
+
+const app = express();
+app.use(express.json())
+// app.use(express.urlencoded({ extended: true }))
+
+// app.use(express.static(path.join(__dirname, './file_storage')))
+
+import seller_auth1 from './routes/seller_auth1_routes.js';
+app.use('/seller',seller_auth1)
+
+import product_upload from './routes/product_upload_model.js';
+app.use('/seller',product_upload)
+
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
 
 
-//database configuration
-import {db_connect} from "./config/database.js";
-
-
-//user signup route
-import { user_signup } from "./routes/user_signup_route.js";
-app.use(user_signup)
-
-//user login route
-import  {user_login}  from "./routes/user_login_route.js";
-app.use(user_login)
-
-
-app.get('/',(req,res)=>{
-    res.end("Server is working")
-})
-
-app.listen(port,async()=>{
-
- await db_connect()
- console.log(`server is lstening on port ${port}`)
-
-})
-
-// -----BEGIN RSA PRIVATE KEY-----
-// -----END RSA PRIVATE KEY-----
+app.listen(process.env.PORT, async () => {
+  await db_connect()
+  console.log(`Server is running on port ${process.env.PORT}`);
+});
