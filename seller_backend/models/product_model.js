@@ -1,33 +1,28 @@
 import mongoose from 'mongoose';
 
 const product_schema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  product_category: {
-    type: String,
-    required: true
-  },
+  // product_category: {
+  //   type: String,
+  //   required: true
+  // },
   product_name: {
-    type: String,
+    type: [String],
     required: true
   },
-  product_upload_by: {
-    type: String,
-    required: true
-  },
-  product_review: {
-    type: String,
-    required: true
-  },
-  product_price: {
-    type: String,
-    required: true
-  },
+  // product_upload_by: {
+  //   type: String,
+  //   required: true
+  // },
+  // product_review: {
+  //   type: String,
+  //   required: true
+  // },
+  // product_price: {
+  //   type: String,
+  //   required: true
+  // },
   product_image_url: {
-    type: String,
+    type: [String],
     required: true
   },
   created_at: {
