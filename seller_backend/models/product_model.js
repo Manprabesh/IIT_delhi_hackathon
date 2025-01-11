@@ -6,13 +6,14 @@ const product_schema = new mongoose.Schema({
   //   required: true
   // },
   product_name: {
-    type: [String],
+    type: [],
     required: true
   },
-  // product_upload_by: {
-  //   type: String,
-  //   required: true
-  // },
+  product_upload_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Authenticaton_process_1',
+    required: true
+  },
   // product_review: {
   //   type: String,
   //   required: true
@@ -22,7 +23,7 @@ const product_schema = new mongoose.Schema({
   //   required: true
   // },
   product_image_url: {
-    type: [String],
+    type: [],
     required: true
   },
   created_at: {

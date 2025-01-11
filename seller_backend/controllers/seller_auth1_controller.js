@@ -4,16 +4,16 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
 
-const saltRounds = 4;
 
 const seller_auth1_controller = async (req, res) => {
+    const saltRounds = 3;
     // res.send("Seller router")
     const { seller_name, seller_email, seller_password } = req.body
 
-    const salt = await bcrypt.genSaltSync(saltRounds);
-    const hash = await bcrypt.hashSync(seller_password, salt);
-
     try {
+
+            const salt =  bcrypt.genSaltSync(saltRounds);
+            const hash = bcrypt.hashSync(seller_password, salt);
 
         const seller = await Authentication_process_1_model.create({
             seller_name,

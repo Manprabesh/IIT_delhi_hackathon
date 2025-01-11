@@ -10,7 +10,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
+// next()
 // Middleware to parse JSON bodies
 export default upload
 

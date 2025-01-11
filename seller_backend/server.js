@@ -1,6 +1,7 @@
 import express from 'express';
 import db_connect from './config/database.js';
 import 'dotenv/config'
+import cookieParser from 'cookie-parser';
 // import upload from './config/multer.js';
 // import path from 'path'
 
@@ -9,6 +10,7 @@ import 'dotenv/config'
 
 const app = express();
 app.use(express.json())
+app.use(cookieParser())
 // app.use(express.urlencoded({ extended: true }))
 
 // app.use(express.static(path.join(__dirname, './file_storage')))
