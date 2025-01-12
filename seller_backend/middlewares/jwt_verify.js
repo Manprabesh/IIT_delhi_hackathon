@@ -8,13 +8,13 @@ const jwt_verification = (req, res, next) => {
         return res.status(400).json({ message: "Token missing" })
     }
 
-    console.log(data)
+    // console.log(data)
 
     jwt.verify(data, 'secret_key', function (err, decoded) {
         if(err){
 
         }
-        console.log("the data", decoded) // bar
+        // console.log("the data", decoded) // bar
         res.user_data=decoded;
     });
 

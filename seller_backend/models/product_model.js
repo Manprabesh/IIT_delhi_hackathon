@@ -6,7 +6,7 @@ const product_schema = new mongoose.Schema({
   //   required: true
   // },
   product_name: {
-    type: [],
+    type: String,
     required: true
   },
   product_upload_by: {
@@ -18,10 +18,14 @@ const product_schema = new mongoose.Schema({
   //   type: String,
   //   required: true
   // },
-  // product_price: {
-  //   type: String,
-  //   required: true
-  // },
+  product_price: {
+    type: String,
+    required: true
+  },
+  product_description: {
+    type: String,
+    required: true
+  },
   product_image_url: {
     type: [],
     required: true

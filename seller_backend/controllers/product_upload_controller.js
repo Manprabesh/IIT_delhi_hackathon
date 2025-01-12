@@ -2,6 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import Product from '../models/product_model.js';
 import Authentication_process_1_model from '../models/seller_Authentication_model.js';
 // import jwt_verification from '../middlewares/jwt_verify.js';
+// import Authentication_process_1_model from '../models/seller_Authentication_model.js';
 
 const product_upload_controller = async (req, res) => {
 
@@ -10,6 +11,13 @@ const product_upload_controller = async (req, res) => {
       message: "No file uploaded!",
     });
   }
+
+  let product_details = {product_name:req.body.product_name,
+    product_description:req.body.product_description,
+    product_price:req.body.product_price,
+  }
+  console.log(product_details.product_name)
+
 
 
   cloudinary.config({
@@ -24,9 +32,12 @@ const product_upload_controller = async (req, res) => {
 
 
   const file_length = req.files.length
+
+  //The arr_files store the values of file from -> req.files
   const arr_files = [];
 
   let i = 0
+  // console.log(req.files)
 
   while (i < file_length) {
 
@@ -35,8 +46,9 @@ const product_upload_controller = async (req, res) => {
 
   }
 
-
+  //The result avriable store the values from cloudinary
   let result = []
+
   let j = 0;
 
   while (j < file_length) {
@@ -44,7 +56,7 @@ const product_upload_controller = async (req, res) => {
     const uploadResult = await cloudinary.uploader
       .upload(
         './uploads/' + arr_files[j]["filename"], {
-        public_id: arr_files[j]["originalname"],
+        public_id: product_details.product_name,
       })
       .catch((error) => {
         console.log(error);
@@ -56,59 +68,61 @@ const product_upload_controller = async (req, res) => {
 
   }
 
-
-
-  product_upload_to_database(arr_files, result, seller_data)
-  res.end("wait")
+  let product_data=await product_upload_to_database(arr_files, result, seller_data, product_details)
+  console.log("______________")
+  console.log(product_data)
+  res.json({product_data})
 }
 
-const product_upload_to_database = async (arr_files, result, seller_data) => {
+const product_upload_to_database = async (arr_files, result, seller_data, product_details) => {
 
   const length_of_files = arr_files.length
   const length_of_url = result.length
 
   console.log(length_of_files);
 
+  let arr_of_image_url = [];
 
-  let arr1 = [];
-  let arr2 = [];
+  let i = 0
 
+  while (i < length_of_files) {
 
-  let i = 0, j = 0;
-
-  while (i < length_of_files || j < length_of_url) {
-
-    arr1.push(arr_files[i]['originalname'])
-    arr2.push(result[j]['url'])
+    arr_of_image_url.push(result[i]['url'])
 
     i++;
-    j++
 
   }
-
-  console.log(arr1)
 
 
   //Checking for the seller
 
   const seller_model = await Authentication_process_1_model.findOne({ seller_email: seller_data })
-  console.log(seller_model)
 
 
   //inserting product
 
   const product_data = await Product.create({
-    product_name: arr1,
-    product_image_url: arr2,
+    product_name:product_details.product_name,
+    product_image_url: arr_of_image_url,
+    product_description:product_details.product_description,
+    product_price:product_details.product_price,
     product_upload_by: seller_model
   })
-  console.log(product_data)
 
-  //populating the "product_upload_by" attribute and displaying it
-  const p_data = await Product.findOne({ product_name: 'Hackathon_data_models.png' }).populate("product_upload_by")
-  console.log("product data: ", p_data)
+  console.log("product data", product_data)
+
+
+seller_model.seller_product.push(product_data._id)
+await seller_model.save()
+
+
+  console.log("**************************")
+
+ return product_data
 
 }
+
+
 
 
 export default product_upload_controller

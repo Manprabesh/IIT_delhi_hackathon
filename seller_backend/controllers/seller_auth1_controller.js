@@ -12,8 +12,8 @@ const seller_auth1_controller = async (req, res) => {
 
     try {
 
-            const salt =  bcrypt.genSaltSync(saltRounds);
-            const hash = bcrypt.hashSync(seller_password, salt);
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hash = bcrypt.hashSync(seller_password, salt);
 
         const seller = await Authentication_process_1_model.create({
             seller_name,
@@ -25,7 +25,7 @@ const seller_auth1_controller = async (req, res) => {
 
         console.log(token)
 
-        res.cookie("token",token,{ expiresIn: '1h' })
+        res.cookie("token", token, { expiresIn: '1h' })
 
         return res.status(200).json(seller)
 
