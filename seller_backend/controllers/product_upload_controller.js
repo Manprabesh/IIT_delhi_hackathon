@@ -12,9 +12,10 @@ const product_upload_controller = async (req, res) => {
     });
   }
 
-  let product_details = {product_name:req.body.product_name,
-    product_description:req.body.product_description,
-    product_price:req.body.product_price,
+  let product_details = {
+    product_name: req.body.product_name,
+    product_description: req.body.product_description,
+    product_price: req.body.product_price,
   }
   console.log(product_details.product_name)
 
@@ -28,7 +29,7 @@ const product_upload_controller = async (req, res) => {
 
 
   const seller_data = res.user_data.seller_email
-  console.log("The email", res.user_data.seller_email)
+  console.log("The email", seller_data)
 
 
   const file_length = req.files.length
@@ -49,13 +50,13 @@ const product_upload_controller = async (req, res) => {
   //The result avriable store the values from cloudinary
   let result = []
 
-  let j = 0;
+  i = 0;
 
-  while (j < file_length) {
+  while (i < file_length) {
 
     const uploadResult = await cloudinary.uploader
       .upload(
-        './uploads/' + arr_files[j]["filename"], {
+        './uploads/' + arr_files[i]["filename"], {
         public_id: product_details.product_name,
       })
       .catch((error) => {
@@ -64,14 +65,14 @@ const product_upload_controller = async (req, res) => {
 
     result.push(uploadResult)
 
-    j++
+    i++
 
   }
 
-  let product_data=await product_upload_to_database(arr_files, result, seller_data, product_details)
+  let product_data = await product_upload_to_database(arr_files, result, seller_data, product_details)
   console.log("______________")
   console.log(product_data)
-  res.json({product_data})
+  res.json({ product_data })
 }
 
 const product_upload_to_database = async (arr_files, result, seller_data, product_details) => {
@@ -96,29 +97,39 @@ const product_upload_to_database = async (arr_files, result, seller_data, produc
 
   //Checking for the seller
 
-  const seller_model = await Authentication_process_1_model.findOne({ seller_email: seller_data })
-
+  const seller_model = await Authentication_process_1_model.findOne({ seller_email: seller_data });
+  console.log(seller_model)
+  if (!seller_model) {
+    return
+  }
 
   //inserting product
+  try {
+    const product_data = await Product.create({
+      product_name: product_details.product_name,
+      product_image_url: arr_of_image_url,
+      product_description: product_details.product_description,
+      product_price: product_details.product_price,
+      product_upload_by: seller_model._id
+    })
+    console.log("product data", product_data)
+    seller_model.seller_product.push(product_data._id)
+    await seller_model.save()
 
-  const product_data = await Product.create({
-    product_name:product_details.product_name,
-    product_image_url: arr_of_image_url,
-    product_description:product_details.product_description,
-    product_price:product_details.product_price,
-    product_upload_by: seller_model
-  })
+    return product_data
 
-  console.log("product data", product_data)
+  } catch (error) {
+    console.log(error)
+  }
 
 
-seller_model.seller_product.push(product_data._id)
-await seller_model.save()
+
+
 
 
   console.log("**************************")
 
- return product_data
+
 
 }
 

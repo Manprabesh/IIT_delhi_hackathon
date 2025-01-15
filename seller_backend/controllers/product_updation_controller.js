@@ -10,21 +10,22 @@ const product_update_controller = async (req, res) => {
     console.log(res.user_data.seller_email)
     const seller_product_info = await Authentication_process_1_model.findOne({ seller_email: res.user_data.seller_email }).populate("seller_product")
 
-    const seller_product_length = seller_product_info.seller_product.length
-    console.log("______________________")
+    // const seller_product_length = seller_product_info.seller_product.length
+    // console.log("______________________")
 
-    console.log(seller_product_info)
+    // console.log(seller_product_info)
 
-    console.log("______________________")
-    console.log(seller_product_info.seller_product)
+    // console.log("______________________")
+    // console.log(seller_product_info.seller_product)
 
-    console.log("pv name", req.body.product_previous_name)
-    console.log("latest name", req.body.product_latest_name)
+    // console.log("pv name", req.body.product_previous_name)
+    // console.log("latest name", req.body.product_latest_name)
 
 
 
     const index = seller_product_info.seller_product.findIndex((seller_product) => {
-        console.log(seller_product.product_name)
+        console.log(seller_product)
+        console.log(seller_product["product_name"])
         return seller_product.product_name === req.body.product_previous_name;
     })
 
