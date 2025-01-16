@@ -1,10 +1,31 @@
 import { v2 as cloudinary } from 'cloudinary';
 import Product from '../models/product_model.js';
 import Authentication_process_1_model from '../models/seller_Authentication_model.js';
-// import jwt_verification from '../middlewares/jwt_verify.js';
-// import Authentication_process_1_model from '../models/seller_Authentication_model.js';
+import fs from 'fs'
+import path from 'path'
+import url from 'url'
+
+import 'dotenv/config'
 
 const product_upload_controller = async (req, res) => {
+
+
+  // console.log(process.cwd(),"working directory")
+
+  // const currentDir = path.dirname(url.fileURLToPath(import.meta.url));
+
+
+
+
+  const uploadsDir = path.join(process.cwd(), './uploads');
+  console.log(uploadsDir)
+
+
+
+  const path_dir = path.join(uploadsDir, req.files[0]["originalname"]);
+
+  console.log('File Path:', path_dir);
+
 
   if (!req.files) {
     return res.status(400).json({
@@ -16,15 +37,19 @@ const product_upload_controller = async (req, res) => {
     product_name: req.body.product_name,
     product_description: req.body.product_description,
     product_price: req.body.product_price,
+    product_category: req.body.product_category,
+    product_quantity: req.body.product_quantity
   }
+
+
   console.log(product_details.product_name)
 
 
 
   cloudinary.config({
-    cloud_name: 'dhbkfleac',
-    api_key: '338358144134781',
-    api_secret: '3Ti_FPO0ZjLtPzE5jSZ3bTmrjF4' // Click 'View API Keys' above to copy your API secret
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
   });
 
 
@@ -69,30 +94,41 @@ const product_upload_controller = async (req, res) => {
 
   }
 
+  //Files get deleted after it gets uploads to cloudinary
+
+  fs.unlink(path_dir, err => {
+    if (err) {
+      console.error('Error deleting the file:', err);
+    } else {
+      console.log("File deleted");
+    }
+  })
+
+
   let product_data = await product_upload_to_database(arr_files, result, seller_data, product_details)
   console.log("______________")
-  console.log(product_data)
-  res.json({ product_data })
+  // console.log(product_data)
+  res.json({ product_details })
 }
 
 const product_upload_to_database = async (arr_files, result, seller_data, product_details) => {
 
   const length_of_files = arr_files.length
-  const length_of_url = result.length
+  // const length_of_url = result.length
 
-  console.log(length_of_files);
+  // console.log(length_of_files);
 
-  let arr_of_image_url = [];
+  let image_url = result[0]['url']
 
-  let i = 0
+  // let i = 0
 
-  while (i < length_of_files) {
+  // while (i < length_of_files) {
 
-    arr_of_image_url.push(result[i]['url'])
+  //   arr_of_image_url.push(result[i]['url'])
 
-    i++;
+  //   i++;
 
-  }
+  // }
 
 
   //Checking for the seller
@@ -106,11 +142,14 @@ const product_upload_to_database = async (arr_files, result, seller_data, produc
   //inserting product
   try {
     const product_data = await Product.create({
+      product_category: product_details.product_category,
+      product_quantity: product_details.product_quantity,
       product_name: product_details.product_name,
-      product_image_url: arr_of_image_url,
+      product_image_url: image_url,
       product_description: product_details.product_description,
       product_price: product_details.product_price,
-      product_upload_by: seller_model._id
+      product_upload_by: seller_model._id,
+
     })
     console.log("product data", product_data)
     seller_model.seller_product.push(product_data._id)

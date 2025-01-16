@@ -29,12 +29,15 @@ const product_download_controller = async (req, res) => {
 
 //For seller to download their product images
 const product_download_controller_by_email=async(req,res)=>{
-    const seller_email=req.body.seller_email
+    const seller_email=res.user_data.seller_email
     console.log(seller_email)
     // console.log(seller_email)
     // res.json({"email":seller_email})
    const seller_products=await  Authentication_process_1_model.findOne({seller_email:seller_email}).populate("seller_product")
+
    console.log("From product_download_controller_by_email",seller_products)
+
+
    return res.status(200).json({"seller products": seller_products})
 }
 

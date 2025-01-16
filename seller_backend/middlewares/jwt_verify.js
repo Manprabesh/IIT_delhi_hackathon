@@ -5,7 +5,7 @@ const jwt_verification = (req, res, next) => {
 
     if (!data) {
         console.log('no token')
-        return res.status(400).json({ message: "Token missing" })
+        return res.status(400).json({ message: "You must logged in" })
     }
 
     // console.log(data)
