@@ -9,29 +9,20 @@ import 'dotenv/config'
 
 const product_upload_controller = async (req, res) => {
 
-
-  // console.log(process.cwd(),"working directory")
-
-  // const currentDir = path.dirname(url.fileURLToPath(import.meta.url));
-
-
-
-
-  const uploadsDir = path.join(process.cwd(), './uploads');
-  console.log(uploadsDir)
-
-
-
-  const path_dir = path.join(uploadsDir, req.files[0]["originalname"]);
-
-  console.log('File Path:', path_dir);
-
-
   if (!req.files) {
     return res.status(400).json({
       message: "No file uploaded!",
     });
   }
+  const seller_email = res.user_data.seller_email
+  console.log(seller_email)
+
+  const uploadsDir = path.join(process.cwd(), './uploads');
+  console.log(uploadsDir)
+
+  const path_dir = path.join(uploadsDir, req.files[0]["originalname"]);
+  console.log('File Path:', path_dir);
+
 
   let product_details = {
     product_name: req.body.product_name,
@@ -42,10 +33,6 @@ const product_upload_controller = async (req, res) => {
   }
 
 
-  console.log(product_details.product_name)
-
-
-
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -54,16 +41,14 @@ const product_upload_controller = async (req, res) => {
 
 
   const seller_data = res.user_data.seller_email
-  console.log("The email", seller_data)
-
 
   const file_length = req.files.length
 
-  //The arr_files store the values of file from -> req.files
   const arr_files = [];
 
+
+
   let i = 0
-  // console.log(req.files)
 
   while (i < file_length) {
 
@@ -72,17 +57,26 @@ const product_upload_controller = async (req, res) => {
 
   }
 
+  //It returns array of objects
+  console.log(arr_files)
+
   //The result avriable store the values from cloudinary
   let result = []
 
   i = 0;
 
-  while (i < file_length) {
+  const file_name_for_public_id = seller_email+product_details.product_name
 
-    const uploadResult = await cloudinary.uploader
-      .upload(
+
+// console.log(fold);
+
+  while (i < file_length) {
+    const uploadResult = await cloudinary
+      .uploader.upload(
         './uploads/' + arr_files[i]["filename"], {
-        public_id: product_details.product_name,
+          asset_folder: 'Seller_Products',
+        public_id:file_name_for_public_id+i ,
+        display_name: product_details.product_name,
       })
       .catch((error) => {
         console.log(error);
@@ -94,8 +88,12 @@ const product_upload_controller = async (req, res) => {
 
   }
 
-  //Files get deleted after it gets uploads to cloudinary
 
+
+  //It returns array of object after uploading to cloudinary
+
+
+  //Files get deleted after it gets uploads to cloudinary
   fs.unlink(path_dir, err => {
     if (err) {
       console.error('Error deleting the file:', err);
@@ -106,9 +104,9 @@ const product_upload_controller = async (req, res) => {
 
 
   let product_data = await product_upload_to_database(arr_files, result, seller_data, product_details)
-  console.log("______________")
-  // console.log(product_data)
-  res.json({ product_details })
+
+  // res.json(product_data)
+  res.json(arr_files)
 }
 
 const product_upload_to_database = async (arr_files, result, seller_data, product_details) => {
@@ -118,7 +116,14 @@ const product_upload_to_database = async (arr_files, result, seller_data, produc
 
   // console.log(length_of_files);
 
-  let image_url = result[0]['url']
+  let image_url =[]
+console.log("the length of URl ",result.length)
+// console.log("the result value",result)
+
+for (const element of result) {
+
+  image_url.push(element['url'])
+}
 
   // let i = 0
 
@@ -134,7 +139,7 @@ const product_upload_to_database = async (arr_files, result, seller_data, produc
   //Checking for the seller
 
   const seller_model = await Authentication_process_1_model.findOne({ seller_email: seller_data });
-  console.log(seller_model)
+  // console.log(seller_model)
   if (!seller_model) {
     return
   }
