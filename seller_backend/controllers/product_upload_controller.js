@@ -14,16 +14,6 @@ const product_upload_controller = async (req, res) => {
       message: "No file uploaded!",
     });
   }
-  const seller_email = res.user_data.seller_email
-  console.log(seller_email)
-
-  const uploadsDir = path.join(process.cwd(), './uploads');
-  console.log(uploadsDir)
-
-  const path_dir = path.join(uploadsDir, req.files[0]["originalname"]);
-  console.log('File Path:', path_dir);
-
-
   let product_details = {
     product_name: req.body.product_name,
     product_description: req.body.product_description,
@@ -36,7 +26,7 @@ const product_upload_controller = async (req, res) => {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
+    api_secret: process.env.CLOUDINARY_API_SECRET
   });
 
 
@@ -65,17 +55,17 @@ const product_upload_controller = async (req, res) => {
 
   i = 0;
 
-  const file_name_for_public_id = seller_email+product_details.product_name
+  const file_name_for_public_id = seller_data + product_details.product_name
 
 
-// console.log(fold);
+  // console.log(fold);
 
   while (i < file_length) {
     const uploadResult = await cloudinary
       .uploader.upload(
         './uploads/' + arr_files[i]["filename"], {
-          asset_folder: 'Seller_Products',
-        public_id:file_name_for_public_id+i ,
+        asset_folder: 'Seller_Products',
+        public_id: file_name_for_public_id + i,
         display_name: product_details.product_name,
       })
       .catch((error) => {
@@ -89,19 +79,34 @@ const product_upload_controller = async (req, res) => {
   }
 
 
+  const seller_email = res.user_data.seller_email
+  console.log(seller_email)
 
-  //It returns array of object after uploading to cloudinary
+  const uploadsDir = path.join(process.cwd(), './uploads');
+  console.log(uploadsDir)
+
+  let path_dir=[];
+  for (let i = 0; i < req.files.length; i++) {
+    path_dir.push( path.join(uploadsDir, req.files[i]["originalname"]));
+    console.log(`path dir${i}`, path_dir[i]);
+  }
+
+  console.log('File Path:', path_dir);
+
+
 
 
   //Files get deleted after it gets uploads to cloudinary
-  fs.unlink(path_dir, err => {
+  for(let i=0;i<req.files.length;i++){
+
+  fs.unlink(path_dir[i], err => {
     if (err) {
       console.error('Error deleting the file:', err);
     } else {
       console.log("File deleted");
     }
   })
-
+  }
 
   let product_data = await product_upload_to_database(arr_files, result, seller_data, product_details)
 
@@ -116,24 +121,14 @@ const product_upload_to_database = async (arr_files, result, seller_data, produc
 
   // console.log(length_of_files);
 
-  let image_url =[]
-console.log("the length of URl ",result.length)
-// console.log("the result value",result)
+  let image_url = []
+  console.log("the length of URl ", result.length)
+  // console.log("the result value",result)
 
-for (const element of result) {
+  for (const element of result) {
 
-  image_url.push(element['url'])
-}
-
-  // let i = 0
-
-  // while (i < length_of_files) {
-
-  //   arr_of_image_url.push(result[i]['url'])
-
-  //   i++;
-
-  // }
+    image_url.push(element['url'])
+  }
 
 
   //Checking for the seller

@@ -9,7 +9,7 @@ const seller_auth1_controller = async (req, res) => {
     const saltRounds = 3;
     // res.send("Seller router")
     const { seller_name, seller_email, seller_password } = req.body
-
+console.log(seller_name)
     try {
 
         const salt = bcrypt.genSaltSync(saltRounds);

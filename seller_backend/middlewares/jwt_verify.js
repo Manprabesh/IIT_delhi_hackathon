@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 const jwt_verification = (req, res, next) => {
     const data = req.cookies.token
 
+    console.log(data, 'cookies')
     if (!data) {
         console.log('no token')
         return res.status(400).json({ message: "You must logged in" })
