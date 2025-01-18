@@ -5,11 +5,11 @@ import jwt from 'jsonwebtoken'
 
 
 
-const seller_auth1_controller = async (req, res) => {
+const seller_auth1_controller = async (req, res, next) => {
     const saltRounds = 3;
     // res.send("Seller router")
     const { seller_name, seller_email, seller_password } = req.body
-console.log(seller_name)
+    console.log(seller_name)
     try {
 
         const salt = bcrypt.genSaltSync(saltRounds);
@@ -27,11 +27,14 @@ console.log(seller_name)
 
         res.cookie("token", token, { expiresIn: '1h' })
 
+        // req.seller_id = seller._id
+        // next()
+
         return res.status(200).json(seller)
 
     } catch (err) {
 
-        console.log("error");
+        console.log(err);
         return res.status(400).end("Try again")
 
     }

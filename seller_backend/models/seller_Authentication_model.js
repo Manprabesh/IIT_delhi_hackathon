@@ -1,6 +1,6 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-const Authentication_process_1 = new Schema({
+const Authentication_process_1 = new mongoose.Schema({
     seller_name: {
         type: String,
         required: true,

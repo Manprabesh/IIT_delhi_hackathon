@@ -16,7 +16,7 @@ const jwt_verification = (req, res, next) => {
 
         }
         // console.log("the data", decoded) // bar
-        res.user_data=decoded;
+        req.user_data=decoded;
     });
 
     next(); // Pass control to the next middleware or route handler
