@@ -1,10 +1,8 @@
 import Product from "../models/product_model.js";
 import Authentication_process_1_model from "../models/seller_Authentication_model.js";
+import seller_auth_2 from "../models/seller_Authentication2_model.js";
 
-//Also send the total prices of the pro
-
-
-//For users to see all the product images
+//For users or seller to see all the product images
 const product_download_controller = async (req, res) => {
     try {
 
@@ -14,6 +12,7 @@ const product_download_controller = async (req, res) => {
         console.log(products)
 
         const product_details = products.map(product => {
+
             return {
                 product_name: product.product_name,
                 product_description: product.product_description,
@@ -21,6 +20,7 @@ const product_download_controller = async (req, res) => {
                 productImageUrl: product.product_image_url,
                 product_category: product.product_category
             };
+
         });
 
 
@@ -36,9 +36,18 @@ const product_download_controller = async (req, res) => {
 //For seller to download their product images
 const product_download_controller_by_email = async (req, res) => {
     const seller_email = req.user_data.seller_email
+
     console.log("", seller_email)
 
+
     const seller_products = await Authentication_process_1_model.findOne({ seller_email: seller_email }).populate("seller_product")
+
+    //checking if the seller auth2 is registered or not
+    const seller_exist = await seller_auth_2.findOne({ seller_id: seller_products._id })
+
+    if (!seller_exist) {
+        return res.status(200).json("You must registed your account")
+    }
 
     //If the seller has not uploaded any products
     if (seller_products.seller_product[0] == undefined) {
@@ -50,38 +59,31 @@ const product_download_controller_by_email = async (req, res) => {
         })
     }
 
+
     const seller_products_length = seller_products.seller_product.length;
 
-
     let product_details = []
-    let product_total_price=0;
+    let product_total_price = 0;
 
 
-    for (let i = 0; i < seller_products_length; i++) {
-        let product = {
-            product_name: seller_products.seller_product[i].product_name,
-            product_category: seller_products.seller_product[i].product_category,
-            product_price: seller_products.seller_product[i].product_price,
-            product_description: seller_products.seller_product[i].description,
-            product_url: seller_products.seller_product[i].product_image_url
-        };
-        product_total_price += seller_products.seller_product[i].product_price
+    let product = seller_products.seller_product.map(product => {
+        product_total_price += product.product_price
+        return {
+            product_name: product.product_name,
+            product_category: product.product_category,
+            product_price: product.product_price,
+            product_description: product.description,
+            product_url: product.product_image_url
+        }
+    })
 
-        // Push the product object into the array
-        product_details.push(product);
 
-        //Return the length of the product image of each product
-        console.log("product image length", seller_products.seller_product[i].product_image_url.length)
-    }
-
-    return res.status(200).json({product_total_price, "seller products": product_details })
+    return res.status(200).json({ product_total_price, "seller products": product })
 }
 
 const product_download_by_category = async (req, res) => {
 
-    const seller_email = res.user_data.seller_email
-
-
+    const seller_email = req.user_data.seller_email
 
     const { product_category, min_price, max_price, product_name } = req.body
 
@@ -121,44 +123,27 @@ const product_download_by_category = async (req, res) => {
             match: product_obj,
         });
 
-    console.log(product_list.seller_product.length)
 
-    // console.log(product_obj.product_price.$gte)
-    // console.log(product_obj.product_price.$lte)
+    console.log("----------",product_list.seller_product[0])
 
-    // const product_list = await Product.find(product_obj)
-    if (!product_list) {
-        return res.status(400).json({ message: "No products found" })
+
+    if (product_list.seller_product[0]==undefined) {
+        return res.status(200).json({ message: "No products found" })
     }
 
-    let product_details = []
+    // let product_details = []
 
+    let product_details = product_list.seller_product.map(product => {
+        return {
+            product_name: product.product_name,
+            product_category: product.product_category,
+            product_price: product.product_price,
+            product_description: product.description,
+            product_url: product.product_image_url
+        }
 
-    for (let i = 0; i < product_list.seller_product.length; i++) {
-        let product = {
-            product_name: product_list.seller_product[i].product_name,
-            product_category: product_list.seller_product[i].product_category,
-            product_price: product_list.seller_product[i].product_price,
-            product_description: product_list.seller_product[i].description,
-            product_url: product_list.seller_product[i].product_image_url
-        };
+    })
 
-
-        //the nesteed loop returns the -> product image url array
-        // for (let j = 0; j < product_list.seller_product[i].product_image_url.length; j++) {
-        //     console.log("the product image url", product_list.seller_product[i].product_image_url[j])
-        // }
-        // console.log("the url length",product_list.seller_product[i].product_image_url.length)
-        // // Push the product object into the array
-        product_details.push(product);
-
-        // //Return the length of the product image of each product
-        // console.log("product image length", product_list.seller_product[i].product_image_url.length)
-    }
-
-
-
-    // console.log("products _____",product_list)
     res.json(product_details)
 }
 
