@@ -1,15 +1,23 @@
 import Authentication_process_1_model from "../models/seller_Authentication_model.js";
-import mongoose from "mongoose";
 import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 
+import set_cookie from "../middlewares/jwt_cookie.js";
 
+const seller_auth1_controller = async (req, res) => {
 
-const seller_auth1_controller = async (req, res, next) => {
-    const saltRounds = 3;
-    // res.send("Seller router")
+    const saltRounds = 10;
+
     const { seller_name, seller_email, seller_password } = req.body
+
+    //searching for the seller
+    const seller_exist=await Authentication_process_1_model.findOne({seller_email})
+
+    if(seller_exist){
+        return res.status(200).json("Email already exist")
+    }
+
     console.log(seller_name)
+
     try {
 
         const salt = bcrypt.genSaltSync(saltRounds);
@@ -21,21 +29,14 @@ const seller_auth1_controller = async (req, res, next) => {
             seller_password: hash
         })
 
-        const token = jwt.sign({ seller_email }, 'secret_key');
+        set_cookie({ seller_email },res)
 
-        console.log(token)
-
-        res.cookie("token", token, { expiresIn: '1h' })
-
-        // req.seller_id = seller._id
-        // next()
-
-        return res.status(200).json(seller)
+        return res.status(200).json("Now Enter your business details")
 
     } catch (err) {
 
         console.log(err);
-        return res.status(400).end("Try again")
+        return res.status(400).end("Try again later server is bussy")
 
     }
 }
